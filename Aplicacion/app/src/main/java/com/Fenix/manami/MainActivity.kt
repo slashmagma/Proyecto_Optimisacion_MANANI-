@@ -1,54 +1,64 @@
 package com.Fenix.manami
 
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import io.github.jan.supabase.postgrest.from
-import kotlinx.coroutines.launch
-import android.util.Log
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import io.github.jan.supabase.auth.auth
+import kotlinx.coroutines.launch
 
+class MainActivity : ComponentActivity() {
 
-
-class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
 
-        obtenerDatosDeSupabase()
+        setContent {
+            MaterialTheme {
+                Surface(modifier = Modifier.fillMaxSize()) {
+                    val navController = rememberNavController()
 
+                    // Revisa sesión para definir vista inicial
+                    val session = SupabaseClient.client.auth.currentSessionOrNull()
+                    val rutaInicial = if (session != null) "home" else "login"
 
-    }
+                    NavHost(
+                        navController = navController,
+                        startDestination = rutaInicial
+                    ) {
+                        // RUTA LOGIN
+                        composable("login") {
+                            Login(
+                                onLoginSuccess = {
+                                    navController.navigate("home") {
+                                        popUpTo("login") { inclusive = true }
+                                    }
+                                }
+                            )
+                        }
 
-    private fun obtenerDatosDeSupabase() {
-        lifecycleScope.launch {
-            Log.d("SUPABASE_LOG", "Iniciando consulta a Supabase...")
-            try {
-                val listaPedidos = SupabaseClient.client
-                    .from("Pedidos")
-                    .select()
-                    .decodeList<Pedido>()
-
-                Log.d("SUPABASE_LOG", "Cantidad de pedidos recibidos: ${listaPedidos.size}")
-
-                for (pedido in listaPedidos) {
-                    Log.d("SUPABASE_LOG", "ID: ${pedido.id} - Cliente: ${pedido.Cliente}")
+                        // RUTA HOME
+                        composable("home") {
+                            Home(
+                                onCerrarSesion = {
+                                    lifecycleScope.launch {
+                                        SupabaseClient.client.auth.signOut()
+                                        navController.navigate("login") {
+                                            popUpTo("home") { inclusive = true }
+                                        }
+                                    }
+                                }
+                            )
+                        }
+                    }
                 }
-            } catch (e: Exception) {
-                Log.e("SUPABASE_LOG", "Error al conectar: ${e.message}", e)
             }
         }
     }
-
-
-
-
 }
