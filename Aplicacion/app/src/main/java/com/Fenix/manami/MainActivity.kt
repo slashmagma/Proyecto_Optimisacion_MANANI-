@@ -13,6 +13,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import io.github.jan.supabase.auth.auth
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.getValue
+import androidx.navigation.compose.currentBackStackEntryAsState
+import com.Fenix.manami.pedidos.ui.VistaPedido
+import com.Fenix.manami.pedidos.ui.CrearPedidoPantalla
 
 class MainActivity : ComponentActivity() {
 
@@ -24,37 +30,72 @@ class MainActivity : ComponentActivity() {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     val navController = rememberNavController()
 
-                    // Revisa sesión para definir vista inicial
+                    // Rastreamos la ruta actual
+                    val navBackStackEntry by navController.currentBackStackEntryAsState()
+                    val rutaActual = navBackStackEntry?.destination?.route
+
+                    // Definimos la ruta inicial
                     val session = SupabaseClient.client.auth.currentSessionOrNull()
                     val rutaInicial = if (session != null) "home" else "login"
 
-                    NavHost(
-                        navController = navController,
-                        startDestination = rutaInicial
-                    ) {
-                        // RUTA LOGIN
-                        composable("login") {
-                            Login(
-                                onLoginSuccess = {
-                                    navController.navigate("home") {
-                                        popUpTo("login") { inclusive = true }
-                                    }
-                                }
-                            )
-                        }
-
-                        // RUTA HOME
-                        composable("home") {
-                            Home(
-                                onCerrarSesion = {
+                    Scaffold(
+                        topBar = {
+                            if (rutaActual != "login") {
+                                BarraSuperior(titulo = "Manami",
+                                CerrarSesion = {
                                     lifecycleScope.launch {
                                         SupabaseClient.client.auth.signOut()
                                         navController.navigate("login") {
-                                            popUpTo("home") { inclusive = true }
+                                            popUpTo(0) { inclusive = true }
                                         }
                                     }
                                 }
-                            )
+                                )
+                            }
+                        }
+                    ) { paddingValues ->
+                        NavHost(
+                            navController = navController,
+                            startDestination = rutaInicial,
+                            modifier = Modifier.padding(paddingValues)
+                        ) {
+                            // RUTA LOGIN
+                            composable("login") {
+                                Login(
+                                    onLoginSuccess = {
+                                        navController.navigate("home") {
+                                            popUpTo("login") { inclusive = true }
+                                        }
+                                    }
+                                )
+                            }
+
+                            // RUTA HOME
+                            composable("home") {
+                                Home(
+                                    onNavegarAPedidos = {
+                                        navController.navigate("pedidos")
+                                    }
+                                )
+                            }
+
+                            // RUTA PEDIDOS
+                            composable("pedidos") {
+                                VistaPedido(
+                                    onAgregarPedidoClick = {
+                                        navController.navigate("CrearPedido")
+                                    }
+                                )
+                            }
+                            composable("CrearPedido") {
+                                CrearPedidoPantalla(
+                                    onPedidoCreado = {
+                                        navController.navigate("pedidos") {
+                                            popUpTo("pedidos") { inclusive = true }
+                                    }
+                                    }
+                                )
+                            }
                         }
                     }
                 }

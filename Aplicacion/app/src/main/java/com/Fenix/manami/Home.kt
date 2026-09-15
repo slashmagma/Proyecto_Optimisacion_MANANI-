@@ -1,43 +1,70 @@
 package com.Fenix.manami
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Home(onCerrarSesion: () -> Unit) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Inicio") },
-                actions = {
-                    TextButton(onClick = onCerrarSesion) {
-                        Text("Cerrar Sesión")
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
-        Box(
+fun Home(
+    onNavegarAPedidos: () -> Unit = {}
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(
+            text = "Home",
+            style = MaterialTheme.typography.headlineMedium
+        )
+
+        // Tarjeta / Rectángulo interactivo
+        Card(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            contentAlignment = Alignment.Center
+                .fillMaxWidth()
+                .height(100.dp)
+                .clickable { onNavegarAPedidos() },
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
-            Text(
-                text = "¡Bienvenido a Manami!",
-                style = MaterialTheme.typography.headlineSmall
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.List,
+                    contentDescription = "Icono Pedidos",
+                    modifier = Modifier.size(40.dp),
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+
+                Column {
+                    Text(
+                        text = "Gestión de Pedidos",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    Text(
+                        text = "Ver, buscar y administrar pedidos",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                    )
+                }
+            }
         }
     }
 }
