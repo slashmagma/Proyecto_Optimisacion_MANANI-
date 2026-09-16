@@ -2,8 +2,6 @@ package com.Fenix.manami.pedidos.data
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlin.Long as Long1
-
 @Serializable
 data class TipoTrabajoModelo(
     @SerialName("id") val id: Int? = null,
@@ -19,7 +17,7 @@ data class EstadoPedidoModelo(
 @Serializable
 data class ModeloPedidos(
     @SerialName("id")
-    val id: Long1? = null,
+    val id: Int ,
 
     @SerialName("Fecha_termino")
     val fechaTermino: String? = null,
@@ -53,4 +51,20 @@ data class PedidoInsertDto(
     @SerialName("Materiales") val materiales: String?,
     @SerialName("TipoTrabajo") val idTipo: Int?,
     @SerialName("EstadosPedidos") val idEstado: Int?
+)
+
+//Actualizar datos
+data class ActualizarUiState(
+    val cliente: String = "",
+    val descripcion: String = "",
+    val materiales: String = "",
+    val pago: String = "",
+    val fechaTermino: String = "",
+    val idTipoTrabajoSeleccionado: Int? = null,
+    val idEstadoSeleccionado: Int? = null,
+    val listaTipos: List<TipoTrabajoModelo> = emptyList(),
+    val listaEstados: List<EstadoPedidoModelo> = emptyList(),
+    val cargando: Boolean = false,
+    val guardadoExitoso: Boolean = false,
+    val error: String? = null
 )

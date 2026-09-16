@@ -1,10 +1,12 @@
 package com.Fenix.manami.pedidos.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -12,13 +14,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.Fenix.manami.pedidos.data.ModeloPedidos
-import androidx.compose.runtime.LaunchedEffect
 @Composable
 fun VistaPedido(
     vistaModelo: PedidosVistaModelo = viewModel(),
-    onAgregarPedidoClick: () -> Unit = {}
+    onAgregarPedidoClick: () -> Unit = {},
+    onPedidoClick: (Int) -> Unit = {} // Parameter para capturar la selección
 ) {
-
+    LaunchedEffect(Unit) {
+        vistaModelo.cargarPedidos()
+    }
     val uiState by vistaModelo.uiState.collectAsState()
 
     Scaffold(
@@ -50,7 +54,10 @@ fun VistaPedido(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             items(state.listaPedidos) { pedido ->
-                                TarjetaPedido(pedido = pedido)
+                                TarjetaPedido(
+                                    pedido = pedido,
+                                    onClick = { onPedidoClick(pedido.id) }
+                                )
                             }
                         }
                     }
@@ -74,10 +81,13 @@ fun VistaPedido(
 
 @Composable
 fun TarjetaPedido(
-    pedido: ModeloPedidos
+    pedido: ModeloPedidos,
+    onClick: () -> Unit = {}
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }, // Evento de clic en la tarjeta
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(

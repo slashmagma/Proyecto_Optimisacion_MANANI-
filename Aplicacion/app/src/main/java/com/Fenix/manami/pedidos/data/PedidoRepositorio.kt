@@ -17,15 +17,40 @@ class PedidoRepositorio {
             )
         ).decodeList<ModeloPedidos>()
     }
-
+    suspend fun obtenerPedidoPorId(id: Int): ModeloPedidos? = withContext(Dispatchers.IO) {
+        tabla.select(
+            Columns.raw(
+                "*, TipoTrabajo_joined:TipoTrabajo(*), EstadosPedidos_joined:EstadosPedidos(*)"
+            )
+        ) {
+            filter {
+                eq("id", id)
+            }
+        }.decodeSingleOrNull<ModeloPedidos>()
+    }
     suspend fun insertarPedido(pedido: PedidoInsertDto) {
         SupabaseClient.client.from("Pedidos").insert(pedido)    }
-
     suspend fun obtenerTiposTrabajo(): List<TipoTrabajoModelo> = withContext(Dispatchers.IO) {
         SupabaseClient.client.from("TipoTrabajo").select().decodeList<TipoTrabajoModelo>()
     }
-
     suspend fun obtenerEstados(): List<EstadoPedidoModelo> = withContext(Dispatchers.IO) {
         SupabaseClient.client.from("EstadosPedidos").select().decodeList<EstadoPedidoModelo>()
     }
+    suspend fun actualizarPedido(id: Int, pedido: PedidoInsertDto) = withContext(Dispatchers.IO) {
+        tabla.update(pedido) {
+            filter {
+                eq("id", id)
+            }
+        }
+    }
+    suspend fun eliminarPedido(id: Int) = withContext(Dispatchers.IO) {
+        tabla.delete {
+            filter {
+                eq("id", id)
+            }
+        }
+        Unit
+    }
+
+
 }
