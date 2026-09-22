@@ -14,15 +14,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.Fenix.manami.pedidos.data.ModeloPedidos
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 @Composable
 fun VistaPedido(
     vistaModelo: PedidosVistaModelo = viewModel(),
     onAgregarPedidoClick: () -> Unit = {},
-    onPedidoClick: (Int) -> Unit = {} // Parameter para capturar la selección
+    onPedidoClick: (Int) -> Unit = {}
 ) {
     LaunchedEffect(Unit) {
         vistaModelo.cargarPedidos()
     }
+
     val uiState by vistaModelo.uiState.collectAsState()
 
     Scaffold(
@@ -42,22 +46,70 @@ fun VistaPedido(
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }
                 is PedidosUiState.Exito -> {
-                    if (state.listaPedidos.isEmpty()) {
-                        Text(
-                            text = "No hay pedidos registrados",
-                            modifier = Modifier.align(Alignment.Center)
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        // BARRA DE BÚSQUEDA
+                        OutlinedTextField(
+                            value = state.textoBusqueda,
+                            onValueChange = { vistaModelo.onBusquedaChanged(it) },
+                            label = { Text("Buscar cliente...") },
+                            singleLine = true,
+                            trailingIcon = {
+                                if (state.textoBusqueda.isNotEmpty()) {
+                                    IconButton(onClick = { vistaModelo.onBusquedaChanged("") }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Clear,
+                                            contentDescription = "Limpiar"
+                                        )
+                                    }
+                                }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
                         )
-                    } else {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        val listaEstados = listOf("Iniciado", "En En espera", "Terminado")
+
+                        LazyRow(
+                            contentPadding = PaddingValues(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.padding(bottom = 8.dp)
                         ) {
-                            items(state.listaPedidos) { pedido ->
-                                TarjetaPedido(
-                                    pedido = pedido,
-                                    onClick = { onPedidoClick(pedido.id) }
+                            items(listaEstados) { estado ->
+                                val estaSeleccionado = state.estadoSeleccionado.equals(estado, ignoreCase = true)
+
+                                FilterChip(
+                                    selected = estaSeleccionado,
+                                    onClick = { vistaModelo.onEstadoFiltroSelected(estado) },
+                                    label = { Text(estado) }
                                 )
+                            }
+                        }
+
+                        // LISTA O MENSAJE VACÍO
+                        if (state.listaPedidos.isEmpty()) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = if (state.textoBusqueda.isBlank())
+                                        "No hay pedidos registrados"
+                                    else
+                                        "No se encontraron clientes para '${state.textoBusqueda}'"
+                                )
+                            }
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                items(state.listaPedidos) { pedido ->
+                                    TarjetaPedido(
+                                        pedido = pedido,
+                                        onClick = { onPedidoClick(pedido.id) }
+                                    )
+                                }
                             }
                         }
                     }
@@ -87,7 +139,7 @@ fun TarjetaPedido(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }, // Evento de clic en la tarjeta
+            .clickable { onClick() },
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(

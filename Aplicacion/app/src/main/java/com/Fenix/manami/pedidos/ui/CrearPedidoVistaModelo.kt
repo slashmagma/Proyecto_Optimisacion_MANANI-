@@ -31,7 +31,7 @@ class CrearPedidoVistaModelo(
     private val repositorio: PedidoRepositorio = PedidoRepositorio()
 ) : ViewModel() {
 
-    // Declaración de _uiState dentro de la clase
+
     private val _uiState = MutableStateFlow(CrearPedidoUiState())
     val uiState: StateFlow<CrearPedidoUiState> = _uiState.asStateFlow()
 
@@ -65,6 +65,30 @@ class CrearPedidoVistaModelo(
     fun onEstadoChange(estado: EstadoPedidoModelo) { _uiState.value = _uiState.value.copy(estadoSeleccionado = estado) }
 
     fun guardarPedido() {
+        val estadoActual = _uiState.value
+        if (estadoActual.cliente.isBlank()) {
+            _uiState.update { it.copy(error = "El nombre del cliente es obligatorio") }
+            return
+        }
+
+        if (estadoActual.pago.isNotBlank() && estadoActual.pago.toIntOrNull() == null) {
+            _uiState.update { it.copy(error = "El campo Pago debe ser un número entero válido") }
+            return
+        }
+        if (estadoActual.pago.isBlank() && estadoActual.pago.toIntOrNull() == null) {
+            _uiState.update { it.copy(error = "El campo Pago no debe estar vacio") }
+            return
+        }
+
+        if (estadoActual.tipoTrabajoSeleccionado == null) {
+            _uiState.update { it.copy(error = "Debe seleccionar un tipo de trabajo") }
+            return
+        }
+
+        if (estadoActual.estadoSeleccionado == null) {
+            _uiState.update { it.copy(error = "Debe seleccionar un estado inicial") }
+            return
+        }
         viewModelScope.launch {
             try {
                 _uiState.update { it.copy(cargando = true, error = null) }
