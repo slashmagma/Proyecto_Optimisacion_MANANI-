@@ -72,7 +72,7 @@ class CrearPedidoVistaModelo(
         }
 
         if (estadoActual.pago.isNotBlank() && estadoActual.pago.toIntOrNull() == null) {
-            _uiState.update { it.copy(error = "El campo Pago debe ser un número entero válido") }
+            _uiState.update { it.copy(error = "El campo Pago debe ser un número entero maximo 9.999.999.999 ") }
             return
         }
         if (estadoActual.pago.isBlank() && estadoActual.pago.toIntOrNull() == null) {

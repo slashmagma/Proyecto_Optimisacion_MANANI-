@@ -82,6 +82,32 @@ class ActualizarPedidoVistaModelo(
 
     // Ejecuta el UPDATE en Supabase
     fun actualizarPedido(pedidoId: Int) {
+
+        val estadoActual = _uiState.value
+        if (estadoActual.cliente.isBlank()) {
+            _uiState.update { it.copy(error = "El nombre del cliente es obligatorio") }
+            return
+        }
+
+        if (estadoActual.pago.isNotBlank() && estadoActual.pago.toIntOrNull() == null) {
+            _uiState.update { it.copy(error = "El campo Pago debe ser un número entero maximo 9.999.999.999") }
+            return
+        }
+        if (estadoActual.pago.isBlank() && estadoActual.pago.toIntOrNull() == null) {
+            _uiState.update { it.copy(error = "El campo Pago no debe estar vacio") }
+            return
+        }
+
+        if (estadoActual.idTipoTrabajoSeleccionado == null) {
+            _uiState.update { it.copy(error = "Debe seleccionar un tipo de trabajo") }
+            return
+        }
+
+        if (estadoActual.idEstadoSeleccionado == null) {
+            _uiState.update { it.copy(error = "Debe seleccionar un estado inicial") }
+            return
+        }
+
         viewModelScope.launch {
             val currentState = _uiState.value
             _uiState.update { it.copy(cargando = true, error = null) }
