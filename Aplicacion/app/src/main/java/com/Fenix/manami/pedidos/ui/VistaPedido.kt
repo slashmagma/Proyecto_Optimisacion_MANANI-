@@ -5,11 +5,13 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -22,8 +24,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.Fenix.manami.FechaUtils
-import com.Fenix.manami.pedidos.data.PedidoModelo
 import com.Fenix.manami.HeaderFenix
+import com.Fenix.manami.pedidos.data.PedidoModelo
 
 @Composable
 fun VistaPedido(
@@ -60,25 +62,75 @@ fun VistaPedido(
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
                 }
                 is PedidosUiState.Exito -> {
-                    if (state.listaPedidos.isEmpty()) {
-                        Text(
-                            text = "No hay pedidos registrados",
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        // BARRA DE BÚSQUEDA
+                        OutlinedTextField(
+                            value = state.textoBusqueda,
+                            onValueChange = { vistaModelo.onBusquedaChanged(it) },
+                            label = { Text("Buscar cliente...") },
+                            singleLine = true,
+                            trailingIcon = {
+                                if (state.textoBusqueda.isNotEmpty()) {
+                                    IconButton(onClick = { vistaModelo.onBusquedaChanged("") }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Clear,
+                                            contentDescription = "Limpiar"
+                                        )
+                                    }
+                                }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
                         )
-                    } else {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
+
+                        // FILTROS POR ESTADO
+                        val listaEstados = listOf("Espera", "Proceso", "Terminado")
+
+                        LazyRow(
+                            contentPadding = PaddingValues(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.padding(bottom = 8.dp)
                         ) {
-                            items(
-                                FechaUtils.ordenarPorFechaCercana(state.listaPedidos)
-                            ) { pedido ->
-                                TarjetaPedido(
-                                    pedido = pedido,
-                                    onClick = { onPedidoClick(pedido.id) },
-                                    onEliminar = { vistaModelo.eliminarPedido(pedido.id) }
+                            items(listaEstados) { estado ->
+                                val estaSeleccionado = state.estadoSeleccionado.equals(estado, ignoreCase = true)
+
+                                FilterChip(
+                                    selected = estaSeleccionado,
+                                    onClick = { vistaModelo.onEstadoFiltroSelected(estado) },
+                                    label = { Text(estado) }
                                 )
+                            }
+                        }
+
+                        // LISTA O MENSAJE VACÍO
+                        if (state.listaPedidos.isEmpty()) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = if (state.textoBusqueda.isBlank() && state.estadoSeleccionado.isBlank())
+                                        "No hay pedidos registrados"
+                                    else
+                                        "No se encontraron pedidos para '${state.textoBusqueda}'"
+                                )
+                            }
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                items(
+                                    FechaUtils.ordenarPorFechaCercana(state.listaPedidos)
+                                ) { pedido ->
+                                    TarjetaPedido(
+                                        pedido = pedido,
+                                        onClick = { onPedidoClick(pedido.id) },
+                                        onEliminar = { vistaModelo.eliminarPedido(pedido.id) }
+                                    )
+                                }
                             }
                         }
                     }

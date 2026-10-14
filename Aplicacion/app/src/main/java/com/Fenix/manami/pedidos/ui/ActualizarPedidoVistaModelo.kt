@@ -67,6 +67,22 @@ class ActualizarPedidoVistaModelo(
     fun onColegioChanged(nuevo: String) { _uiState.update { it.copy(colegio = nuevo) } }
 
     fun actualizarPedido(pedidoId: Int) {
+
+        val estadoActual = _uiState.value
+        if (estadoActual.nombreCliente.isBlank()) {
+            _uiState.update { it.copy(error = "El nombre del cliente es obligatorio") }
+            return
+        }
+
+        if (estadoActual.monto.isNotBlank() && estadoActual.monto.toIntOrNull() == null) {
+            _uiState.update { it.copy(error = "El campo Pago debe ser un número entero maximo 9.999.999.999") }
+            return
+        }
+        if (estadoActual.monto.isBlank()) {
+            _uiState.update { it.copy(error = "El campo Pago no debe estar vacio") }
+            return
+        }
+
         viewModelScope.launch {
             val currentState = _uiState.value
             _uiState.update { it.copy(cargando = true, error = null) }
