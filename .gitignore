@@ -1,0 +1,14 @@
+# Archivos grandes que GitHub no permite (limite 100 MB)
+*.mp4
+
+# Archivos de build de Android/Gradle
+*.apk
+*.aab
+*.apk.meta
+.gradle/
+build/
+local.properties
+*.iml
+captures/
+.DS_Store
+hs_err_pid*.log
