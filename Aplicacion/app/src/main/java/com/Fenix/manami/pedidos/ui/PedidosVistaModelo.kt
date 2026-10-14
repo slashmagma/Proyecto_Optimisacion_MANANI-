@@ -2,7 +2,7 @@ package com.Fenix.manami.pedidos.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.Fenix.manami.pedidos.data.ModeloPedidos
+import com.Fenix.manami.pedidos.data.PedidoModelo
 import com.Fenix.manami.pedidos.data.PedidoRepositorio
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 
 sealed interface PedidosUiState {
     object Cargando : PedidosUiState
-    data class Exito(val listaPedidos: List<ModeloPedidos>) : PedidosUiState
+    data class Exito(val listaPedidos: List<PedidoModelo>) : PedidosUiState
     data class Error(val mensaje: String) : PedidosUiState
 }
 
@@ -38,4 +38,16 @@ class PedidosVistaModelo(
         }
     }
 
+    fun eliminarPedido(pedidoId: Int) {
+        viewModelScope.launch {
+            try {
+                repositorio.eliminarPedido(pedidoId)
+                // Recargar la lista después de eliminar
+                val pedidos = repositorio.obtenerPedidos()
+                _uiState.value = PedidosUiState.Exito(pedidos)
+            } catch (e: Exception) {
+                _uiState.value = PedidosUiState.Error(e.localizedMessage ?: "Error al eliminar")
+            }
+        }
+    }
 }

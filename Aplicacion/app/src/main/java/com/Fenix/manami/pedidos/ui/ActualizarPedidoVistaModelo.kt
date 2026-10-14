@@ -2,14 +2,26 @@ package com.Fenix.manami.pedidos.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.Fenix.manami.pedidos.data.ActualizarUiState
-import com.Fenix.manami.pedidos.data.PedidoInsertDto
 import com.Fenix.manami.pedidos.data.PedidoRepositorio
+import com.Fenix.manami.pedidos.data.PedidoInsertDto
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+data class ActualizarUiState(
+    val nombreCliente: String = "",
+    val detalle: String = "",
+    val materialUtilizado: String = "",
+    val monto: String = "",
+    val fecha: String = "",
+    val estado: String = "",
+    val colegio: String = "",
+    val cargando: Boolean = false,
+    val guardadoExitoso: Boolean = false,
+    val error: String? = null
+)
 
 class ActualizarPedidoVistaModelo(
     private val repositorio: PedidoRepositorio = PedidoRepositorio()
@@ -18,27 +30,22 @@ class ActualizarPedidoVistaModelo(
     private val _uiState = MutableStateFlow(ActualizarUiState())
     val uiState: StateFlow<ActualizarUiState> = _uiState.asStateFlow()
 
-    // Carga los datos existentes del pedido y las listas para los desplegables
     fun cargarDatosIniciales(pedidoId: Int) {
         viewModelScope.launch {
             _uiState.update { it.copy(cargando = true, error = null) }
             try {
-                val tipos = repositorio.obtenerTiposTrabajo()
-                val estados = repositorio.obtenerEstados()
                 val pedido = repositorio.obtenerPedidoPorId(pedidoId)
 
                 if (pedido != null) {
                     _uiState.update {
                         it.copy(
-                            cliente = pedido.cliente,
-                            descripcion = pedido.descripcion ?: "",
-                            materiales = pedido.materiales ?: "",
-                            pago = pedido.pago?.toString() ?: "",
-                            fechaTermino = pedido.fechaTermino ?: "",
-                            idTipoTrabajoSeleccionado = pedido.tipoTrabajo?.id,
-                            idEstadoSeleccionado = pedido.estadoPedido?.id,
-                            listaTipos = tipos,
-                            listaEstados = estados,
+                            nombreCliente = pedido.nombreCliente,
+                            detalle = pedido.detalle ?: "",
+                            materialUtilizado = pedido.materialUtilizado ?: "",
+                            monto = pedido.monto?.toString() ?: "",
+                            fecha = pedido.fecha ?: "",
+                            estado = pedido.estado ?: "",
+                            colegio = pedido.colegio ?: "",
                             cargando = false
                         )
                     }
@@ -51,36 +58,14 @@ class ActualizarPedidoVistaModelo(
         }
     }
 
-    // Funciones para actualizar el estado con cada interacción del usuario
-    fun onClienteChanged(nuevoCliente: String) {
-        _uiState.update { it.copy(cliente = nuevoCliente) }
-    }
+    fun onNombreClienteChanged(nuevo: String) { _uiState.update { it.copy(nombreCliente = nuevo) } }
+    fun onDetalleChanged(nuevo: String) { _uiState.update { it.copy(detalle = nuevo) } }
+    fun onMaterialUtilizadoChanged(nuevo: String) { _uiState.update { it.copy(materialUtilizado = nuevo) } }
+    fun onMontoChanged(nuevo: String) { _uiState.update { it.copy(monto = nuevo) } }
+    fun onFechaChanged(nuevo: String) { _uiState.update { it.copy(fecha = nuevo) } }
+    fun onEstadoChanged(nuevo: String) { _uiState.update { it.copy(estado = nuevo) } }
+    fun onColegioChanged(nuevo: String) { _uiState.update { it.copy(colegio = nuevo) } }
 
-    fun onDescripcionChanged(nuevaDescripcion: String) {
-        _uiState.update { it.copy(descripcion = nuevaDescripcion) }
-    }
-
-    fun onMaterialesChanged(nuevosMateriales: String) {
-        _uiState.update { it.copy(materiales = nuevosMateriales) }
-    }
-
-    fun onPagoChanged(nuevoPago: String) {
-        _uiState.update { it.copy(pago = nuevoPago) }
-    }
-
-    fun onFechaTerminoChanged(nuevaFecha: String) {
-        _uiState.update { it.copy(fechaTermino = nuevaFecha) }
-    }
-
-    fun onTipoTrabajoSeleccionado(idTipo: Int?) {
-        _uiState.update { it.copy(idTipoTrabajoSeleccionado = idTipo) }
-    }
-
-    fun onEstadoSeleccionado(idEstado: Int?) {
-        _uiState.update { it.copy(idEstadoSeleccionado = idEstado) }
-    }
-
-    // Ejecuta el UPDATE en Supabase
     fun actualizarPedido(pedidoId: Int) {
         viewModelScope.launch {
             val currentState = _uiState.value
@@ -88,13 +73,13 @@ class ActualizarPedidoVistaModelo(
 
             try {
                 val dto = PedidoInsertDto(
-                    cliente = currentState.cliente,
-                    pago = currentState.pago.toIntOrNull(),
-                    fechaTermino = currentState.fechaTermino.ifBlank { null },
-                    descripcion = currentState.descripcion.ifBlank { null },
-                    materiales = currentState.materiales.ifBlank { null },
-                    idTipo = currentState.idTipoTrabajoSeleccionado,
-                    idEstado = currentState.idEstadoSeleccionado
+                    nombreCliente = currentState.nombreCliente,
+                    monto = currentState.monto.toIntOrNull(),
+                    fecha = currentState.fecha.ifBlank { null },
+                    detalle = currentState.detalle.ifBlank { null },
+                    materialUtilizado = currentState.materialUtilizado.ifBlank { null },
+                    estado = currentState.estado.ifBlank { null },
+                    colegio = currentState.colegio.ifBlank { null }
                 )
 
                 repositorio.actualizarPedido(pedidoId, dto)
@@ -104,7 +89,7 @@ class ActualizarPedidoVistaModelo(
             }
         }
     }
-    // ElIMINAR PEDIDO
+
     fun eliminarPedido(pedidoId: Int) {
         viewModelScope.launch {
             _uiState.update { it.copy(cargando = true, error = null) }
@@ -116,5 +101,4 @@ class ActualizarPedidoVistaModelo(
             }
         }
     }
-
 }

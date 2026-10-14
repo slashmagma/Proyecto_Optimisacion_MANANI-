@@ -50,53 +50,53 @@ fun ActualizarPedidoVista(
                 )
 
                 OutlinedTextField(
-                    value = uiState.cliente,
-                    onValueChange = { vistaModelo.onClienteChanged(it) },
-                    label = { Text("Cliente") },
+                    value = uiState.nombreCliente,
+                    onValueChange = { vistaModelo.onNombreClienteChanged(it) },
+                    label = { Text("Nombre Cliente") },
                     modifier = Modifier.fillMaxWidth()
                 )
 
                 OutlinedTextField(
-                    value = uiState.pago,
-                    onValueChange = { vistaModelo.onPagoChanged(it) },
-                    label = { Text("Pago") },
+                    value = uiState.materialUtilizado,
+                    onValueChange = { vistaModelo.onMaterialUtilizadoChanged(it) },
+                    label = { Text("Material Utilizado") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                OutlinedTextField(
+                    value = uiState.detalle,
+                    onValueChange = { vistaModelo.onDetalleChanged(it) },
+                    label = { Text("Detalle") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                OutlinedTextField(
+                    value = uiState.monto,
+                    onValueChange = { vistaModelo.onMontoChanged(it) },
+                    label = { Text("Monto") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth()
                 )
 
                 OutlinedTextField(
-                    value = uiState.fechaTermino,
-                    onValueChange = { vistaModelo.onFechaTerminoChanged(it) },
-                    label = { Text("Fecha Término") },
+                    value = uiState.fecha,
+                    onValueChange = { vistaModelo.onFechaChanged(it) },
+                    label = { Text("Fecha") },
                     modifier = Modifier.fillMaxWidth()
                 )
 
                 OutlinedTextField(
-                    value = uiState.descripcion,
-                    onValueChange = { vistaModelo.onDescripcionChanged(it) },
-                    label = { Text("Descripción") },
+                    value = uiState.estado,
+                    onValueChange = { vistaModelo.onEstadoChanged(it) },
+                    label = { Text("Estado") },
                     modifier = Modifier.fillMaxWidth()
                 )
 
                 OutlinedTextField(
-                    value = uiState.materiales,
-                    onValueChange = { vistaModelo.onMaterialesChanged(it) },
-                    label = { Text("Materiales") },
+                    value = uiState.colegio,
+                    onValueChange = { vistaModelo.onColegioChanged(it) },
+                    label = { Text("Colegio") },
                     modifier = Modifier.fillMaxWidth()
-                )
-
-                DesplegableSeleccion(
-                    etiqueta = "Tipo de Trabajo",
-                    opciones = uiState.listaTipos.map { Pair(it.id ?: 0, it.tipo ?: "") },
-                    seleccionadoId = uiState.idTipoTrabajoSeleccionado,
-                    onSeleccionado = { vistaModelo.onTipoTrabajoSeleccionado(it) }
-                )
-
-                DesplegableSeleccion(
-                    etiqueta = "Estado del Pedido",
-                    opciones = uiState.listaEstados.map { Pair(it.id ?: 0, it.estado ?: "") },
-                    seleccionadoId = uiState.idEstadoSeleccionado,
-                    onSeleccionado = { vistaModelo.onEstadoSeleccionado(it) }
                 )
 
                 if (uiState.error != null) {
@@ -125,48 +125,6 @@ fun ActualizarPedidoVista(
                 ) {
                     Text("Eliminar Pedido")
                 }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun DesplegableSeleccion(
-    etiqueta: String,
-    opciones: List<Pair<Int, String>>,
-    seleccionadoId: Int?,
-    onSeleccionado: (Int) -> Unit
-) {
-    var expandido by remember { mutableStateOf(false) }
-    val textoSeleccionado = opciones.find { it.first == seleccionadoId }?.second ?: "Seleccionar..."
-
-    ExposedDropdownMenuBox(
-        expanded = expandido,
-        onExpandedChange = { expandido = !expandido }
-    ) {
-        OutlinedTextField(
-            value = textoSeleccionado,
-            onValueChange = {},
-            readOnly = true,
-            label = { Text(etiqueta) },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandido) },
-            modifier = Modifier
-                .menuAnchor()
-                .fillMaxWidth()
-        )
-        ExposedDropdownMenu(
-            expanded = expandido,
-            onDismissRequest = { expandido = false }
-        ) {
-            opciones.forEach { (id, nombre) ->
-                DropdownMenuItem(
-                    text = { Text(nombre) },
-                    onClick = {
-                        onSeleccionado(id)
-                        expandido = false
-                    }
-                )
             }
         }
     }
